@@ -1,0 +1,123 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.sidebar-container {
+    position: relative;
+}
+
+.sidebar {
+    height: 100vh;
+    width: 250px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #2c3e50;
+    padding-top: 20px;
+    color: white;
+    transition: all 0.3s;
+    padding-left: 10px;
+    z-index: 2;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    padding: 10px;
+}
+
+.sidebar ul li a {
+    color: white;
+    text-decoration: none;
+}
+
+.sidebar ul li a:hover {
+    background-color: #1abc9c;
+}
+
+.sidebar ul .submenu {
+    display: none;
+    background-color: #34495e;
+    padding: 0;
+}
+
+.sidebar ul .submenu li {
+    padding: 10px;
+}
+
+.sidebar ul .submenu li a {
+    color: white;
+}
+
+.menuPin {
+    cursor: pointer;
+}
+
+.toggle-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #1abc9c;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    z-index: 3;
+}
+
+.content {
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.menuPin {
+    display: inline-block;
+}
+
+.sidebar-container:has(.sidebar-open) .sidebar {
+    left: 0; /* 사이드바 등장 */
+}
+
+/* 사이드바가 열릴 때 컨텐츠 밀기 */
+.sidebar-container:has(.sidebar-open) + .content {
+    margin-left: 250px;
+}
+
+.active {
+    background-color: black;
+}
+
+
+@media (max-width: 768px) {
+    .sidebar {
+        left: -250px;
+    }
+
+    .sidebar.sidebar-open {
+        left: 0;
+    }
+
+    .toggle-btn {
+        display: block;
+    }
+}
+
+@media (min-width: 1024px) {
+    .sidebar {
+        left: -250px;
+    }
+
+    .sidebar.sidebar-open {
+        left: 0;
+    }
+
+    .toggle-btn {
+        display: block;
+    }
+}
