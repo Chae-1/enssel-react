@@ -1,15 +1,15 @@
 import React, {useState} from "react";
 import {Button, TextField} from "@mui/material";
 
-function emptyForm() {
+const emptyForm = () => {
     return {
         name: '',
         id: '',
         password: '',
     };
-}
+};
 
-const RegisterUserModalContent = ({dispatch}) => {
+const RegisterUserModalContent = ({ dispatch }) => {
     const [form, setForm] = useState(emptyForm());
 
     const onChange = (e) => {
@@ -62,4 +62,5 @@ const RegisterUserModalContent = ({dispatch}) => {
         </>
     );
 };
+
 export default RegisterUserModalContent;

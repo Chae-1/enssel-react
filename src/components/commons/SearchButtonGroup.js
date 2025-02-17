@@ -1,48 +1,63 @@
 import {Button, Grid2 as Grid} from "@mui/material";
 import React, {useCallback, useEffect, useMemo, useReducer} from "react";
-import UserModal from "../user/modal/UserModal";
 import axios from "axios";
+
+
+
+const userRequestUriEndPointMap = new Map([
+    ['user_register', '/bi/user/regiUser'],
+    ['user_edit', '/bi/user/update'],
+    ['user_delete', '/bi/user/inactivate'],
+]);
+
 
 const modalReducer = (state, action) => {
     console.log("action", action);
-    if (action.type === "OPEN") {
-        return {isOpen: true, modalType: action.modalType};
+    if (action.type === "MODAL_OPEN") {
+        return { isOpen: true, modalType: action.modalType };
     }
 
-    if (action.type === "CLOSE") {
-        return {isOpen: false, modalType: null};
+    if (action.type === "MODAL_CLOSE") {
+        return { isOpen: false, modalType: null };
     }
 
     if (action.type === "SUBMIT_FORM") {
-        const url = state.modalType === "user_register"
-            ? "http://localhost:8082/bi/user/regiUser"
-            : "http://localhost:8082/bi/user/update";
-
+        const url = 
+            `http://localhost:8082${userRequestUriEndPointMap.get(state.modalType)}`
+        
         axios.post(url, action.form || {})
             .then(console.log)
             .catch(console.error);
 
-        return {isOpen: false, modalType: null};
+        return { isOpen: false, modalType: state.modalType };
     }
     return state;
 };
 
-const SearchButtonGroup = ({loadData, selectedItems}) => {
+function shouldLoadData(isModalOpen, modalType) {
+
+    // modalType : edit, create, delete
+    // modalOpen : false
+    // 해당 상황일 때, datagrid의 data reload가 필요하다.
+    return !isModalOpen && modalType;
+}
+
+const SearchButtonGroup = ({loadData, selectedItems, children}) => {
 
     const [state, dispatch] = useReducer(modalReducer, {
         isOpen: false, modalType: null, form: null
     });
 
     useEffect(() => {
-        if (!state.isOpen) {
+        if (shouldLoadData(state.isOpen, state.modalType)) {
+            console.log("data load");
             loadData();
         }
-    }, [state.isOpen, loadData]);
+    }, [state.isOpen, state.modalType]);
 
     const openModal = useCallback((modalType) => {
-        dispatch({type: "OPEN", modalType});
-    }, [])
-
+        dispatch({type: "MODAL_OPEN", modalType});
+    }, []);
 
     const buttonConfigs = [
         {label: "조회", action: loadData},
@@ -70,7 +85,8 @@ const SearchButtonGroup = ({loadData, selectedItems}) => {
                 ))}
             </Grid>
 
-            <UserModal dispatch={dispatch} state={state} selectedRowsData={selectedItems}/>
+            { React.isValidElement(children) ?
+                React.cloneElement(children, { dispatch, state, selectedRowsData: selectedItems }) : children }
         </>
     );
 }

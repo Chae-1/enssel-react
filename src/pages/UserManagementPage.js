@@ -4,17 +4,8 @@ import axios from "axios";
 import UserSearchMenu from "../components/user/UserSearchMenu";
 import DataGrid from "devextreme-react/data-grid";
 
-
-
-const UserManagementPage = () => {
-
-    const [onload, setOnload] = useState(false);
-
-    const [selectedItems, setSelectedItems] = useState({});
-
-    const gridRef = useRef(null);
-
-    const searchForm = useRef({
+function emptySearchForm() {
+    return {
         id: '',
         name: '',
         registerUserId: '',
@@ -24,22 +15,35 @@ const UserManagementPage = () => {
         updateDateFrom: '',
         updateDateTo: '',
         useYn: 'Y',
-    });
+    };
+}
+
+const UserManagementPage = () => {
+
+    const [onload, setOnload] = useState(false);
+
+    const selectedItems = useRef([]); // state -> 변경될때마다 렌더링이 3번, useRef -> 1번 렌더링
+
+    const userDateGridRef = useRef(null);
+
+    const searchForm = useRef(emptySearchForm());
+
+    const setSelectedItems = (rowItems) => {
+        selectedItems.current = rowItems;
+    };
 
     const setSearchForm = useCallback((key, value) => {
         searchForm.current[key] = value;
-        console.log(searchForm.current);
     }, []);
 
     const onSelectionChanged = useCallback((e) => {
         const selectedRowsData = e.selectedRowsData;
-        console.log(e.selectedRowsData);
-        setSelectedItems({
+        setSelectedItems([
             ...selectedRowsData
-        });
+        ]);
     }, []);
 
-    const store = new CustomStore({
+    const userDataGridStore = new CustomStore({
         key: "id",
         async load() {
             try {
@@ -58,10 +62,13 @@ const UserManagementPage = () => {
         },
     });
 
-    const refreshGrid = useCallback(() => {
+    const refreshUserGrid = useCallback(() => {
         setOnload(true);
-        setSearchForm({});
-        const instance = gridRef.current.instance();
+        setSearchForm(emptySearchForm());
+        setSelectedItems([]);
+
+        const instance = userDateGridRef.current.instance();
+        instance.clearSelection();
         const dataGridDataSource = instance.getDataSource();
         dataGridDataSource.reload();
     }, []);
@@ -105,15 +112,15 @@ const UserManagementPage = () => {
     return (
         <>
             <UserSearchMenu
-                loadData={refreshGrid} searchForm={searchForm} setSearchForm={setSearchForm}
+                loadData={refreshUserGrid} searchForm={searchForm} setSearchForm={setSearchForm}
                 selectedItems={selectedItems}
             />
 
             <DataGrid
-                dataSource={store}
+                dataSource={userDataGridStore}
                 allowColumnReordering={false}
                 allowColumnResizing={false}
-                ref={gridRef}
+                ref={userDateGridRef}
                 columns={userDataGridColumns}
                 onSelectionChanged={onSelectionChanged}
                 keyExpr="id"
