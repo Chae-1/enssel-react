@@ -1,8 +1,7 @@
 import React, {useCallback, useRef, useState} from "react";
-import {CustomStore} from "devextreme/common/data";
-import axios from "axios";
 import UserSearchMenu from "../components/user/UserSearchMenu";
-import DataGrid from "devextreme-react/data-grid";
+import UserDataGrid from "../components/user/datagrid/UserDataGrid";
+import UserGroupDataGrid from "../components/user/datagrid/UserGroupDataGrid";
 
 function emptySearchForm() {
     return {
@@ -22,9 +21,13 @@ const UserManagementPage = () => {
 
     const [onload, setOnload] = useState(false);
 
-    const selectedItems = useRef([]); // state -> 변경될때마다 렌더링이 3번, useRef -> 1번 렌더링
+    // state -> 변경될때마다 모든 컴포넌트 렌더링, useRef -> 1번 렌더링
+    // 변경을 감지하지 못한다.
+    const selectedItems = useRef([]);
 
     const userDateGridRef = useRef(null);
+
+    const groupDataGridRef = useRef(null);
 
     const searchForm = useRef(emptySearchForm());
 
@@ -43,92 +46,42 @@ const UserManagementPage = () => {
         ]);
     }, []);
 
-    const userDataGridStore = new CustomStore({
-        key: "id",
-        async load() {
-            try {
-                if (!onload) {
-                    return [];
-                }
-                const {data} = await axios.get("http://localhost:8082/bi/user/table", {
-                    params: searchForm.current,
-                });
-
-                console.log(data);
-                return {data: data.data};
-            } catch (err) {
-                throw new Error("Data Loading Error.");
-            }
-        },
-    });
-
-    const refreshUserGrid = useCallback(() => {
+    const refreshGrid = useCallback(() => {
         setOnload(true);
         setSearchForm(emptySearchForm());
         setSelectedItems([]);
 
-        const instance = userDateGridRef.current.instance();
-        instance.clearSelection();
-        const dataGridDataSource = instance.getDataSource();
-        dataGridDataSource.reload();
+        // user data grid.
+        const userDataGridInstance = userDateGridRef.current.instance();
+        userDataGridInstance.clearSelection();
+        const userDataSource = userDataGridInstance.getDataSource();
+        userDataSource.reload();
+
+        // group date grid.
+        const groupDataGridInstance = groupDataGridRef.current.instance();
+        groupDataGridInstance.clearSelection();
+        const groupDataSource = userDataGridInstance.getDataSource();
+        groupDataSource.reload();
     }, []);
 
-    const userDataGridColumns = [
-        {
-            dataField: "id",
-            caption: "아이디",
-        },
-        {
-            caption: "이름",
-            dataField: "name",
-        },
-        {
-            dataField: "password",
-            caption: "패스워드",
-        },
-        {
-            caption: '등록일',
-            dataField: "registerDateTime",
-            dataType: "date",
-        },
-        {
-            caption: "등록자아이디",
-            dataField: "registerUserId",
-        }, {
-            caption: "수정일",
-            dataField: "updateDateTime",
-            dataType: "date"
-        },
-        {
-            caption: "수정자아이디",
-            dataField: "updateUserId"
-        },
-        {
-            caption: "사용여부",
-            dataField: "useYn",
-        }
-    ];
 
     return (
         <>
             <UserSearchMenu
-                loadData={refreshUserGrid} searchForm={searchForm} setSearchForm={setSearchForm}
+                loadData={refreshGrid} searchForm={searchForm} setSearchForm={setSearchForm}
                 selectedItems={selectedItems}
             />
 
-            <DataGrid
-                dataSource={userDataGridStore}
-                allowColumnReordering={false}
-                allowColumnResizing={false}
-                ref={userDateGridRef}
-                columns={userDataGridColumns}
-                onSelectionChanged={onSelectionChanged}
-                keyExpr="id"
-                dateSerializationFormat={"yyyy-MM-dd"}
-                selection={{ mode: "multiple", showCheckBoxesMode: "always", selectAllMode: "page" }}
-                pager={{ visible: true, showNavigationButtons: true }}
-                paging={{ enabled: true, pageSize: 10 }}
+            <UserDataGrid userDateGridRef={userDateGridRef}
+                          onload={onload}
+                          searchForm={searchForm}
+                          onSelectionChanged={onSelectionChanged}
             />
+
+            <UserGroupDataGrid groupDataGridRef={groupDataGridRef}
+                               selectedItems={selectedItems} onload={onload}
+                               searchForm={searchForm}/>
+
         </>
     );
 }

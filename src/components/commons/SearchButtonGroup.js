@@ -2,14 +2,11 @@ import {Button, Grid2 as Grid} from "@mui/material";
 import React, {useCallback, useEffect, useMemo, useReducer} from "react";
 import axios from "axios";
 
-
-
 const userRequestUriEndPointMap = new Map([
     ['user_register', '/bi/user/regiUser'],
     ['user_edit', '/bi/user/update'],
     ['user_delete', '/bi/user/inactivate'],
 ]);
-
 
 const modalReducer = (state, action) => {
     console.log("action", action);
@@ -31,6 +28,7 @@ const modalReducer = (state, action) => {
 
         return { isOpen: false, modalType: state.modalType };
     }
+
     return state;
 };
 
@@ -41,9 +39,10 @@ function shouldLoadData(isModalOpen, modalType) {
     // 해당 상황일 때, datagrid의 data reload가 필요하다.
     return !isModalOpen && modalType;
 }
-
 const SearchButtonGroup = ({loadData, selectedItems, children}) => {
 
+    // todo: 현재 버튼 그룹에서 사용하는 reducer의 dispatch가 부모 컴포넌트로 부터 3 depth 정도 떨어져 있기 때문에 이를 수정할 필요성이 존재한다.
+    // -> Redux를 사용해 해당 action에 대한 상태를 관리한다면 효과적일 수 있지 않을까?
     const [state, dispatch] = useReducer(modalReducer, {
         isOpen: false, modalType: null, form: null
     });
@@ -60,7 +59,7 @@ const SearchButtonGroup = ({loadData, selectedItems, children}) => {
     }, []);
 
     const buttonConfigs = [
-        {label: "조회", action: loadData},
+        {label: "조회", action: () => loadData()},
         {label: "등록", action: () => openModal("user_register")},
         {label: "수정", action: () => openModal("user_edit")},
         {label: "삭제", action: () => openModal("user_delete")}

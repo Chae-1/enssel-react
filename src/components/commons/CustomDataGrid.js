@@ -3,16 +3,9 @@ import {CustomStore} from "devextreme/common/data";
 import axios from "axios";
 import {useState} from "react";
 
-const CustomDataGrid = ({columns, gridRef, formData, requestUrl, }) => {
+const CustomDataGrid = ({columns, gridRef, formData, requestUrl }) => {
 
     const [onload, setOnload] = useState(false);
-
-    const refreshGrid = () => {
-        setOnload(true);
-        const instance = gridRef.current.instance();
-        const dataGridDataSource = instance.getDataSource();
-        dataGridDataSource.reload();
-    };
 
     const store = new CustomStore({
         key: "id",
@@ -22,7 +15,7 @@ const CustomDataGrid = ({columns, gridRef, formData, requestUrl, }) => {
                     return [];
                 }
 
-                const { data } = await axios.get("http://localhost:8082/bi/user/table", {
+                const { data } = await axios.get(requestUrl, {
                     params: formData.current,
                 });
 
